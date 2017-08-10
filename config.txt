@@ -1,0 +1,5 @@
+alias composer="php /usr/local/bin/composer.phar"
+export GOPATH=/Users/bizzyindonesia/Documents/go
+export GOBIN=$GOPATH/bin
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:~/.composer/vendor/bin:/usr/local/opt/go/libexec/bin:/usr/local/go/bin
+export PATH=$PATH:$GOBIN
