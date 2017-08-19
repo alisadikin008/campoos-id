@@ -24,6 +24,7 @@ type student struct {
 }
 
 func connect() *sql.DB {
+	//https://stackoverflow.com/questions/15698479/how-to-connect-to-mysql-with-go
 	db, err := sql.Open(DB_TYPE, DB_USER+":"+DB_PASS+"@"+DB_HOST+"/"+DB_NAME)
 	if err != nil {
 		log.Fatal(err)
