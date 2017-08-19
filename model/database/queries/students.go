@@ -3,6 +3,7 @@ package queries
 import (
 	"campoos-id/model/database"
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"log"
 )
@@ -26,15 +27,16 @@ type input_student struct {
 
 var DB = database.ConnectDB()
 
-func hashingPassword(password string) {
+func hashingPassword(password string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(password))
-	//hex.EncodeToString(hasher.Sum(nil))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 func CreateNewStudent(fn string, ln string, un string, pw string, st string) {
 	//defer DB.Close()
-	_, err := DB.Exec("insert into students VALUES(?,?,?,?,?)", fn, ln, un, hashingPassword(pw), st)
+	_, err := DB.Exec(`insert into students(firstname,lastname,username,password,status)
+                    VALUES(?,?,?,?,?)`, fn, ln, un, hashingPassword(pw), st)
 	if err != nil {
 		log.Fatal("query error")
 	}
@@ -43,7 +45,7 @@ func CreateNewStudent(fn string, ln string, un string, pw string, st string) {
 
 func GetAllStudents() {
 	defer DB.Close()
-	rows, err := DB.Query("select id,firstname,lastname from students")
+	rows, err := DB.Query("select * from students")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -52,7 +54,7 @@ func GetAllStudents() {
 	var result []students
 	for rows.Next() {
 		var each = students{}
-		var err = rows.Scan(&each.id, &each.firstname, &each.lastname)
+		var err = rows.Scan(&each.id, &each.firstname, &each.lastname, &each.username, &each.password, &each.status)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -63,8 +65,8 @@ func GetAllStudents() {
 		fmt.Println(err.Error())
 		return
 	}
-	fmt.Println("ID", "Firstname", "Lastname")
+	fmt.Println("ID", "Firstname", "Lastname", "Password", "Status")
 	for _, each := range result {
-		fmt.Println(each.id, each.firstname, each.lastname)
+		fmt.Println(each.id, each.firstname, each.lastname, each.username, each.password, each.status)
 	}
 }

@@ -7,7 +7,7 @@ import (
 func main() {
 	//insert new student
 	//firstname,lastname,username,password,status
-	queries.CreateNewStudent("Olgha", "Haq", "olghahaq", "cinta", "inactive")
+	queries.CreateNewStudent("Dyah", "Sari", "dyahsari", "april1986", "inactive")
 	//get all students
 	queries.GetAllStudents()
 }
