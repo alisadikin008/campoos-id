@@ -1,9 +1,8 @@
 package queries
 
 import (
+	"campoos-id/helper"
 	"campoos-id/model/database"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"log"
 )
@@ -17,56 +16,55 @@ type students struct {
 	status    string
 }
 
-type input_student struct {
-	firstname string
-	lastname  string
-	username  string
-	password  string
-	status    string
-}
-
 var DB = database.ConnectDB()
-
-func hashingPassword(password string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(password))
-	return hex.EncodeToString(hasher.Sum(nil))
-}
 
 func CreateNewStudent(fn string, ln string, un string, pw string, st string) {
 	//defer DB.Close()
 	_, err := DB.Exec(`insert into students(firstname,lastname,username,password,status)
-                    VALUES(?,?,?,?,?)`, fn, ln, un, hashingPassword(pw), st)
+                    VALUES(?,?,?,?,?)`, fn, ln, un, helper.HashingPassword(pw), st)
 	if err != nil {
 		log.Fatal("query error")
 	}
 	fmt.Println("new Student Created")
 }
 
-func GetAllStudents() {
+func GetStudentById(id int8) students {
+	defer DB.Close()
+	row := DB.QueryRow(`select * from students where id = ?`, id)
+	result := students{}
+	row.Scan(&result.id, &result.firstname, &result.lastname, &result.username, &result.password, &result.status)
+	return result
+}
+
+func GetStudents() []students {
 	defer DB.Close()
 	rows, err := DB.Query("select * from students")
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		return nil
 	}
 	defer rows.Close()
-	var result []students
+	var result = []students{}
 	for rows.Next() {
 		var each = students{}
 		var err = rows.Scan(&each.id, &each.firstname, &each.lastname, &each.username, &each.password, &each.status)
 		if err != nil {
 			fmt.Println(err.Error())
-			return
+			return nil
 		}
 		result = append(result, each)
 	}
 	if err = rows.Err(); err != nil {
 		fmt.Println(err.Error())
-		return
+		return nil
 	}
-	fmt.Println("ID", "Firstname", "Lastname", "Password", "Status")
-	for _, each := range result {
-		fmt.Println(each.id, each.firstname, each.lastname, each.username, each.password, each.status)
+	return result
+}
+
+func DeleteStudent(id int8) {
+	//defer DB.Close()
+	_, err := DB.Exec(`delete from students where id = ?`, id)
+	if err != nil {
+		log.Fatal("query error")
 	}
+	fmt.Printf("Student with ID %d has been deleted\n", id)
 }
